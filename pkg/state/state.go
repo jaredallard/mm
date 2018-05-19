@@ -64,8 +64,8 @@ func Serialize() {
 
 // Get the state store
 func Get(id string) string {
-	if _, ok := stateRep[id]; !ok {
-		return "2" // start at 1
+	if d, ok := stateRep[id]; !ok || d == "" {
+		stateRep[id] = "2"
 	}
 
 	return stateRep[id]
