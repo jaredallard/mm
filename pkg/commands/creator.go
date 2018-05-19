@@ -45,7 +45,8 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 
 	initCron(cfg)
 
-	commandTable = make([]Command, len(sheet.Values))
+	nc := numCmd(sheet)
+	commandTable = make([]Command, nc)
 
 	commands := 0
 	for i := range sheet.Values {
@@ -159,7 +160,7 @@ func RunCommand(index int) error {
 
 // Start the cron watcher
 func Start() {
-	cronTable.AddFunc("@every 5s", func() {
+	cronTable.AddFunc("@every 60s", func() {
 		log.Debug("polling Google Sheet for new instructions")
 
 		contents, err := sheets.GetSheet(cfg.Sheet.ID, "A:F")
@@ -168,11 +169,10 @@ func Start() {
 		}
 
 		// FIXME: Only detects basic addition / removal, and replaces the entire struct
-		if numCmd(contents) != len(commandTable) {
+		nc := numCmd(contents)
+		if nc != len(commandTable) {
 			log.Info("Refreshing command list due to changes.")
 			cronTable.Stop()
-
-			initCron(cfg)
 			Initialize(cfg, contents)
 		}
 	})
