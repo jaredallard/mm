@@ -87,10 +87,11 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 		cmd := commandTable[commands]
 
 		cronTable.AddFunc(cmd.Date, func() {
-			id := strconv.Itoa(commands)
+			nid := commands - 1
+			id := strconv.Itoa(nid)
 			log.Debug("running command, via cron:", id)
 
-			RunCommand(commands)
+			RunCommand(nid)
 		})
 
 		log.Info("Registered command '" + cmd.Comment + "' to run at interval '" + cmd.Date + "'")
