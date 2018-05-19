@@ -148,6 +148,11 @@ func RunCommand(index int) error {
 		return err
 	}
 
+	if len(contents) == 0 || contents[0] == "" {
+		log.Debug("Empty contents for task, skipping and not bumping state index.")
+		return nil
+	}
+
 	err = telegram.SendToChannel(cfg.Telegram.ChannelID, contents[0])
 	if err != nil {
 		return err
