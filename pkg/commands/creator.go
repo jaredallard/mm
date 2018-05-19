@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/jaredallard/mm/pkg/state"
 	"github.com/jaredallard/mm/pkg/telegram"
@@ -34,7 +35,8 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 	log.Debug("started command init")
 
 	cfg = c
-	cronTable = cron.New()
+	l, _ := time.LoadLocation(cfg.Sheet.Timezone)
+	cronTable = cron.NewWithLocation(l)
 
 	// FIXME: Will be larger than needed.
 	commands := 0
@@ -79,7 +81,7 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 			Column:   commandSlice[0],
 			Date:     commandSlice[1],
 			SheetID:  commandSlice[2],
-			Timezone: commandSlice[3],
+			Timezone: "",
 			Comment:  commandSlice[4],
 			Text:     text,
 		}

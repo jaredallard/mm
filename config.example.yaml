@@ -6,6 +6,7 @@ telegram:
 # Google Sheets ID
 sheet:
   ID: 
+  timezone: Europe/Amsterdam
 
 # Google App
 google:

@@ -14,7 +14,8 @@ type ConfigurationFile struct {
 		ChannelID string `yaml:"channelID"`
 	}
 	Sheet struct {
-		ID string `yaml:"ID"`
+		ID       string `yaml:"ID"`
+		Timezone string `yaml:"timezone"`
 	}
 	Google struct {
 		APIKey string `yaml:"apiKey"`
