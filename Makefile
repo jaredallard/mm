@@ -4,7 +4,7 @@ release:
 
 debug:
 	go build
-	mv hpkg ~/.bin/hpkg
+	mv mm ~/.bin/mm
 
 clean:
 	rm -rf Release

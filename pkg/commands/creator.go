@@ -160,7 +160,7 @@ func RunCommand(index int) error {
 
 // Start the cron watcher
 func Start() {
-	cronTable.AddFunc("@every 60s", func() {
+	cronTable.AddFunc("@every 1h", func() {
 		log.Debug("polling Google Sheet for new instructions")
 
 		contents, err := sheets.GetSheet(cfg.Sheet.ID, "A:F")
