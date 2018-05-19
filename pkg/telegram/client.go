@@ -31,8 +31,6 @@ func Setup(cfg *config.ConfigurationFile) {
 	if err != nil {
 		log.Fatal("Failed to start Telegram client.", err.Error())
 	}
-
-	log.Info("Telegram client created")
 }
 
 // SendToChannel a message

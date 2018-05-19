@@ -2,7 +2,6 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"github.com/jaredallard/mm/pkg/config"
 	log "github.com/jaredallard/mm/pkg/logger"
 	"github.com/jaredallard/mm/pkg/sheets"
+	cron "github.com/robfig/cron"
 )
 
 // Command is a command structure
@@ -27,12 +27,14 @@ type Command struct {
 
 var commandTable []Command
 var cfg *config.ConfigurationFile
+var cronTable *cron.Cron
 
 // Initialize the command table
 func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 	log.Debug("started command init")
 
 	cfg = c
+	cronTable = cron.New()
 
 	// FIXME: Will be larger than needed.
 	commands := 0
@@ -82,11 +84,21 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 			Text:     text,
 		}
 
+		cmd := commandTable[commands]
+
+		cronTable.AddFunc(cmd.Date, func() {
+			id := strconv.Itoa(commands)
+			log.Debug("running command, via cron:", id)
+
+			RunCommand(commands)
+		})
+
+		log.Info("Registered command '" + cmd.Comment + "' to run at interval '" + cmd.Date + "'")
+
 		commands++
 	}
 
 	log.Debug("commands initialized")
-	fmt.Println(commandTable)
 
 	workDir, err := os.Getwd()
 	if err != nil {
@@ -133,4 +145,9 @@ func RunCommand(index int) error {
 	state.Bump(strIndex)
 
 	return nil
+}
+
+// Start the cron watcher
+func Start() {
+	cronTable.Start()
 }

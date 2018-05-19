@@ -26,6 +26,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/robfig/cron"
+  packages = ["."]
+  revision = "b41be1df696709bb6395fe435af20370037c0b4c"
+  version = "v1.1"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix"]
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e764333b478738ac7bfe1ddb362b4734f897132b847e2cfb6668f13fa3710fd6"
+  inputs-digest = "271c8819f7e501379c3a0b6259fa811b4a3438fcbc6406c885b02e48571537d9"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	log.Info("Starting mm ...")
 	workDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Failed to obtain working directory.")
@@ -34,10 +35,11 @@ func main() {
 
 	commands.Initialize(&cfg, contents)
 
-	err = commands.RunCommand(1)
-	if err != nil {
-		log.Fatal("Failed to run command:", err.Error())
-	}
+	log.Info("All dependencies started successfully")
 
-	log.Info("It worked!")
+	log.Info("Starting cron implementation...")
+	commands.Start()
+
+	log.Info("cron started")
+	select {}
 }
