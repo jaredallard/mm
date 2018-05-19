@@ -30,44 +30,34 @@ var commandTable []Command
 var cfg *config.ConfigurationFile
 var cronTable *cron.Cron
 
+func initCron(cfg *config.ConfigurationFile) {
+	l, _ := time.LoadLocation(cfg.Sheet.Timezone)
+	cronTable = cron.NewWithLocation(l)
+
+	log.Info("cron configured to run with timezone:", cfg.Sheet.Timezone)
+}
+
 // Initialize the command table
 func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 	log.Debug("started command init")
 
 	cfg = c
-	l, _ := time.LoadLocation(cfg.Sheet.Timezone)
-	cronTable = cron.NewWithLocation(l)
 
-	// FIXME: Will be larger than needed.
+	initCron(cfg)
+
+	commandTable = make([]Command, len(sheet.Values))
+
 	commands := 0
-	for i := range sheet.Values {
-		if i == 0 {
-			continue
-		}
-		if len(sheet.Values[i]) < 4 {
-			continue
-		}
-		if sheet.Values[i][1] == "" {
-			continue
-		}
-		commands++
-	}
-
-	// use the prealloc
-	commandTable = make([]Command, commands)
-
-	commands = 0
 	for i := range sheet.Values {
 		commandSlice := sheet.Values[i]
 
-		// pre-checks
+		// skip the first index, that's our mapper (for js)
 		if i == 0 {
 			continue
 		}
+
+		// filter out semi-bar data.
 		if len(commandSlice) < 4 {
-			continue
-		}
-		if sheet.Values[i][1] == "" {
 			continue
 		}
 
@@ -90,9 +80,6 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 
 		cronTable.AddFunc(cmd.Date, func() {
 			nid := commands - 1
-			id := strconv.Itoa(nid)
-			log.Debug("running command, via cron:", id)
-
 			RunCommand(nid)
 		})
 
@@ -109,6 +96,26 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 	}
 	log.Debug("Setting up state")
 	state.Init(filepath.Join(workDir, "state.json"), commands)
+}
+
+// Get the number of valid commands in a Google Sheets splice
+func numCmd(sheet sheets.SheetContents) int {
+	valid := 0
+	for i := range sheet.Values {
+		// skip the first index, that's our mapper (for js)
+		if i == 0 {
+			continue
+		}
+
+		// filter out semi-bar data.
+		if len(sheet.Values[i]) < 4 {
+			continue
+		}
+
+		valid++
+	}
+
+	return valid
 }
 
 // RunCommand <- name implies is
@@ -152,5 +159,22 @@ func RunCommand(index int) error {
 
 // Start the cron watcher
 func Start() {
+	cronTable.AddFunc("@every 5s", func() {
+		log.Debug("polling Google Sheet for new instructions")
+
+		contents, err := sheets.GetSheet(cfg.Sheet.ID, "A:F")
+		if err != nil {
+			log.Fatal("Failed to get sheet contents.")
+		}
+
+		// FIXME: Only detects basic addition / removal, and replaces the entire struct
+		if numCmd(contents) != len(commandTable) {
+			log.Info("Refreshing command list due to changes.")
+			cronTable.Stop()
+
+			initCron(cfg)
+			Initialize(cfg, contents)
+		}
+	})
 	cronTable.Start()
 }
