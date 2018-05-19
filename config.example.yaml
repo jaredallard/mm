@@ -1,0 +1,12 @@
+# Telegram Information
+telegram:
+  token: 
+  channelID: 
+
+# Google Sheets ID
+sheet:
+  ID: 
+
+# Google App
+google:
+  apiKey: 
