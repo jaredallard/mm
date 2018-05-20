@@ -51,6 +51,7 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 	commands := 0
 	for i := range sheet.Values {
 		commandSlice := sheet.Values[i]
+		index := commands
 
 		// skip the first index, that's our mapper (for js)
 		if i == 0 {
@@ -68,7 +69,7 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 			text = commandSlice[5]
 		}
 
-		commandTable[commands] = Command{
+		commandTable[index] = Command{
 			Column:   commandSlice[0],
 			Date:     commandSlice[1],
 			SheetID:  commandSlice[2],
@@ -80,7 +81,7 @@ func Initialize(c *config.ConfigurationFile, sheet sheets.SheetContents) {
 		cmd := commandTable[commands]
 
 		cronTable.AddFunc(cmd.Date, func() {
-			nid := commands - 1
+			nid := index
 			RunCommand(nid)
 		})
 
@@ -143,7 +144,10 @@ func RunCommand(index int) error {
 	prev := state.Get(strIndex)
 	log.Debug("Iteration ID:", prev)
 
-	contents, err := sheets.GetRange(pointer.SheetID, pointer.Column+prev+":"+pointer.Column+prev)
+	readRange := pointer.Column + prev + ":" + pointer.Column + prev
+	log.Debug("Range:", readRange)
+
+	contents, err := sheets.GetRange(pointer.SheetID, readRange)
 	if err != nil {
 		return err
 	}
